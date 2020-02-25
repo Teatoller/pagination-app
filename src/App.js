@@ -1,26 +1,58 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import Posts from "./components/Posts";
+import Pagination from "./components/Pagination";
+import axios from "axios";
+import "./App.css";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component {
+  constructor(props) {
+    super();
+    this.state = {
+      posts: [],
+      loading: false,
+      activePage: "1",
+      itemCountPerPage: "10"
+    };
+  }
+
+  componentDidMount() {
+    axios.get(`https://jsonplaceholder.typicode.com/posts`).then(res => {
+      const Posts = res.data;
+      this.setState({
+        posts: Posts,
+        loading: false
+      });
+    });
+  }
+
+  render() {
+    const { activePage, itemCountPerPage, loading, posts } = this.state;
+    // Get current posts
+    const indexOfLastItem = activePage * itemCountPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemCountPerPage;
+    const currentItems = posts.slice(indexOfFirstItem, indexOfLastItem);
+
+    // Change page
+
+    const paginate = pageNumber => {
+      this.setState({
+        activePage: pageNumber
+      });
+    };
+
+    return (
+      <div className="container mt-5">
+        <h1 className="text-primary mb-3">My Blog</h1>
+        <Posts posts={currentItems} loading={loading} />
+        <Pagination
+          itemCountPerPage={itemCountPerPage}
+          totalItems={posts.length}
+          paginate={paginate}
+        />
+      </div>
+    );
+  }
 }
 
 export default App;
+
